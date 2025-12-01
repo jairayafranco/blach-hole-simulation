@@ -5,8 +5,10 @@
  * - SceneManager: Manages the Three.js scene graph and animation loop
  * - RendererManager: Handles WebGL rendering and post-processing
  * - CameraController: Manages camera positioning and user interaction
+ * - ConfigurationManager: Manages simulation parameters and runtime configuration
  */
 
 export { SceneManager } from './SceneManager.js';
 export { RendererManager } from './RendererManager.js';
 export { CameraController } from './CameraController.js';
+export { ConfigurationManager } from './ConfigurationManager.js';
