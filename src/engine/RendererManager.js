@@ -42,6 +42,9 @@ export class RendererManager {
       antialias: true,
       alpha: true,
       powerPreference: 'high-performance',
+      stencil: false, // Disable stencil buffer if not needed for performance
+      depth: true,
+      logarithmicDepthBuffer: false // Disable unless needed for extreme depth ranges
     });
 
     // Set pixel ratio for sharp rendering on high-DPI displays
@@ -317,6 +320,61 @@ export class RendererManager {
    */
   getComposer() {
     return this.composer;
+  }
+
+  /**
+   * Enable performance optimizations
+   * @param {Object} options - Optimization options
+   */
+  enablePerformanceOptimizations(options = {}) {
+    if (!this.renderer) {
+      return;
+    }
+
+    const {
+      reducedPixelRatio = false,
+      disableAntialias = false
+    } = options;
+
+    // Reduce pixel ratio for better performance on high-DPI displays
+    if (reducedPixelRatio) {
+      this.renderer.setPixelRatio(1);
+    }
+
+    // Disable antialiasing for better performance
+    if (disableAntialias && this.renderer.getContext()) {
+      // Note: Can't change antialias after context creation, but we can note it
+      console.log('Antialias setting cannot be changed after renderer initialization');
+    }
+
+    // Additional optimizations
+    this.renderer.sortObjects = true; // Enable object sorting for better transparency
+    this.renderer.info.autoReset = true; // Auto-reset render info each frame
+  }
+
+  /**
+   * Get renderer performance info
+   * @returns {Object} Renderer performance information
+   */
+  getPerformanceInfo() {
+    if (!this.renderer) {
+      return null;
+    }
+
+    return {
+      memory: {
+        geometries: this.renderer.info.memory.geometries,
+        textures: this.renderer.info.memory.textures
+      },
+      render: {
+        calls: this.renderer.info.render.calls,
+        triangles: this.renderer.info.render.triangles,
+        points: this.renderer.info.render.points,
+        lines: this.renderer.info.render.lines,
+        frame: this.renderer.info.render.frame
+      },
+      programs: this.renderer.info.programs?.length || 0
+    };
   }
 
   /**

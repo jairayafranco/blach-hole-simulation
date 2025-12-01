@@ -29,6 +29,9 @@ export class BlackHoleCore {
     // Create the mesh
     this.mesh = new THREE.Mesh(geometry, this.material);
     this.mesh.name = 'BlackHoleCore';
+    
+    // Enable frustum culling for performance optimization
+    this.mesh.frustumCulled = true;
   }
 
   /**

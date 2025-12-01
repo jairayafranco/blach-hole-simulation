@@ -84,10 +84,10 @@ export class GravitationalLensing {
       // Schwarzschild radius (simplified)
       const float SCHWARZSCHILD_MULTIPLIER = 2.0;
       
-      // Ray marching parameters
-      const int MAX_STEPS = 32;
+      // Ray marching parameters (optimized for performance)
+      const int MAX_STEPS = 16; // Reduced from 32 for better performance
       const float MAX_DISTANCE = 50.0;
-      const float STEP_SIZE = 0.5;
+      const float STEP_SIZE = 1.0; // Increased step size for fewer iterations
       
       /**
        * Calculate gravitational deflection using simplified Schwarzschild metric

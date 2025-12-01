@@ -45,10 +45,13 @@ export class ParticleSystem {
       this.resetParticle(i);
     }
 
-    // Set buffer attributes
-    geometry.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(this.colors, 3));
-    geometry.setAttribute('size', new THREE.BufferAttribute(this.sizes, 1));
+    // Set buffer attributes with dynamic usage hint for better performance
+    geometry.setAttribute('position', new THREE.BufferAttribute(this.positions, 3).setUsage(THREE.DynamicDrawUsage));
+    geometry.setAttribute('color', new THREE.BufferAttribute(this.colors, 3).setUsage(THREE.DynamicDrawUsage));
+    geometry.setAttribute('size', new THREE.BufferAttribute(this.sizes, 1).setUsage(THREE.StaticDrawUsage));
+
+    // Compute bounding sphere for frustum culling optimization
+    geometry.computeBoundingSphere();
 
     // Create custom shader material
     this.material = this.createShaderMaterial();
@@ -56,6 +59,9 @@ export class ParticleSystem {
     // Create Points object
     this.particles = new THREE.Points(geometry, this.material);
     this.particles.name = 'ParticleSystem';
+    
+    // Enable frustum culling for performance (default is true, but explicit for clarity)
+    this.particles.frustumCulled = true;
   }
 
   /**
@@ -125,23 +131,24 @@ export class ParticleSystem {
       }
     `;
 
-    // Fragment shader with alpha blending
+    // Fragment shader with alpha blending (optimized for performance)
     const fragmentShader = `
       varying vec3 vColor;
       varying float vDistance;
       
       void main() {
-        // Create circular point sprite
+        // Create circular point sprite with optimized distance calculation
         vec2 center = gl_PointCoord - vec2(0.5);
-        float dist = length(center);
+        float distSq = dot(center, center); // Use squared distance to avoid sqrt
         
-        // Discard pixels outside circle
-        if (dist > 0.5) {
+        // Discard pixels outside circle (0.5^2 = 0.25)
+        if (distSq > 0.25) {
           discard;
         }
         
-        // Smooth edge with alpha blending
-        float alpha = 1.0 - smoothstep(0.3, 0.5, dist);
+        // Smooth edge with alpha blending using squared distance
+        // Optimized: avoid sqrt by using squared distance thresholds
+        float alpha = 1.0 - smoothstep(0.09, 0.25, distSq); // 0.3^2 = 0.09, 0.5^2 = 0.25
         
         // Apply color with alpha
         gl_FragColor = vec4(vColor, alpha * 0.8);
@@ -262,6 +269,9 @@ export class ParticleSystem {
     // Mark attributes as needing update
     geometry.attributes.position.needsUpdate = true;
     geometry.attributes.color.needsUpdate = true;
+    
+    // Update bounding sphere for frustum culling optimization
+    geometry.computeBoundingSphere();
 
     // Update time uniform
     if (this.material && this.material.uniforms) {

@@ -41,6 +41,9 @@ export class AccretionDisk {
     
     // Rotate disk to be horizontal (perpendicular to Y axis)
     this.mesh.rotation.x = -Math.PI / 2;
+    
+    // Enable frustum culling for performance optimization
+    this.mesh.frustumCulled = true;
   }
 
   /**

@@ -10,6 +10,7 @@ import { GravitationalLensing } from './components/GravitationalLensing.js';
 import { Starfield } from './components/Starfield.js';
 import { LightingSystem } from './components/LightingSystem.js';
 import { PerformanceMonitor } from './utils/PerformanceMonitor.js';
+import { PerformanceProfiler } from './utils/PerformanceProfiler.js';
 
 /**
  * BlackHoleSimulation is the main class that integrates all components
@@ -41,6 +42,7 @@ export class BlackHoleSimulation {
 
     // Performance monitoring
     this.performanceMonitor = null;
+    this.performanceProfiler = null;
     this.performanceNotificationCallback = null;
 
     // Animation state
@@ -152,6 +154,12 @@ export class BlackHoleSimulation {
 
       // 8. Set up performance monitoring
       this.setupPerformanceMonitoring();
+      
+      // 8a. Set up performance profiler for detailed metrics
+      this.performanceProfiler = new PerformanceProfiler();
+      if (config.enableProfiling) {
+        this.performanceProfiler.start();
+      }
 
       // 9. Wire up configuration system
       this.wireConfigurationSystem();
@@ -283,6 +291,55 @@ export class BlackHoleSimulation {
   }
 
   /**
+   * Get detailed performance profile
+   * @returns {Object} Detailed performance metrics
+   */
+  getPerformanceProfile() {
+    if (!this.performanceProfiler) {
+      return null;
+    }
+    return this.performanceProfiler.getAveragedMetrics();
+  }
+
+  /**
+   * Enable performance profiling
+   */
+  enableProfiling() {
+    if (this.performanceProfiler) {
+      this.performanceProfiler.start();
+    }
+  }
+
+  /**
+   * Disable performance profiling
+   */
+  disableProfiling() {
+    if (this.performanceProfiler) {
+      this.performanceProfiler.stop();
+    }
+  }
+
+  /**
+   * Log performance report to console
+   */
+  logPerformanceReport() {
+    if (this.performanceProfiler) {
+      this.performanceProfiler.logReport();
+    }
+  }
+
+  /**
+   * Get performance recommendations
+   * @returns {Array<string>} Array of performance recommendations
+   */
+  getPerformanceRecommendations() {
+    if (!this.performanceProfiler) {
+      return [];
+    }
+    return this.performanceProfiler.getRecommendations();
+  }
+
+  /**
    * Wire up the configuration system to all components
    * Connects ConfigurationManager to components and sets up change handlers
    */
@@ -409,6 +466,11 @@ export class BlackHoleSimulation {
     // Record frame for performance monitoring
     if (this.performanceMonitor) {
       this.performanceMonitor.recordFrame();
+    }
+    
+    // Record frame for performance profiler
+    if (this.performanceProfiler && this.rendererManager) {
+      this.performanceProfiler.recordFrame(this.rendererManager.renderer);
     }
   }
 
@@ -587,6 +649,11 @@ export class BlackHoleSimulation {
     if (this.performanceMonitor) {
       this.performanceMonitor.stop();
       this.performanceMonitor = null;
+    }
+
+    if (this.performanceProfiler) {
+      this.performanceProfiler.stop();
+      this.performanceProfiler = null;
     }
 
     this.performanceNotificationCallback = null;
