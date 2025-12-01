@@ -1,10 +1,13 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { BlackHoleSimulation } from './BlackHoleSimulation.js'
+import { UIControls } from './components/UIControls.jsx'
+import { AccessibilityFeatures } from './components/AccessibilityFeatures.jsx'
 import './App.css'
 
 function App() {
   const canvasRef = useRef(null)
   const simulationRef = useRef(null)
+  const [simulationReady, setSimulationReady] = useState(false)
 
   useEffect(() => {
     if (!canvasRef.current) return
@@ -21,6 +24,7 @@ function App() {
       bloomStrength: 1.5
     }).then(() => {
       simulation.start()
+      setSimulationReady(true)
     }).catch(error => {
       console.error('Failed to initialize simulation:', error)
     })
@@ -44,7 +48,20 @@ function App() {
           display: 'block',
           background: '#000000'
         }}
+        aria-label="Black hole simulation visualization"
       />
+      {simulationReady && (
+        <>
+          <UIControls 
+            simulation={simulationRef.current}
+            onPresetChange={(preset) => console.log('Preset changed to:', preset)}
+          />
+          <AccessibilityFeatures
+            simulation={simulationRef.current}
+            cameraController={simulationRef.current.getCameraController()}
+          />
+        </>
+      )}
     </div>
   )
 }

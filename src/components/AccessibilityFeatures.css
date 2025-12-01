@@ -1,0 +1,260 @@
+.accessibility-features {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.accessibility-toggle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.accessibility-toggle:hover {
+  background: rgba(0, 0, 0, 0.85);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+.accessibility-toggle:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.descriptions-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 30px;
+  color: white;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.descriptions-panel h2 {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #fff;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 10px;
+}
+
+.descriptions-panel h3 {
+  margin: 20px 0 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.descriptions-panel section {
+  margin-bottom: 20px;
+}
+
+.descriptions-panel p {
+  margin: 10px 0;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+}
+
+.descriptions-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.descriptions-panel li {
+  padding: 8px 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+}
+
+.descriptions-panel kbd {
+  display: inline-block;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 13px;
+  color: #fff;
+  margin-right: 8px;
+}
+
+.accessibility-options {
+  margin-top: 15px;
+}
+
+.accessibility-options label {
+  display: flex;
+  align-items: center;
+  margin: 15px 0 5px 0;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.accessibility-options input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  cursor: pointer;
+  accent-color: #fff;
+}
+
+.option-description {
+  margin: 5px 0 15px 30px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+}
+
+.close-descriptions {
+  width: 100%;
+  padding: 12px;
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.close-descriptions:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.close-descriptions:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Scrollbar styling */
+.descriptions-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.descriptions-panel::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.descriptions-panel::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.descriptions-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .accessibility-features {
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .descriptions-panel {
+    width: 95%;
+    max-height: 90vh;
+    padding: 20px;
+  }
+
+  .descriptions-panel h2 {
+    font-size: 20px;
+  }
+
+  .descriptions-panel h3 {
+    font-size: 16px;
+  }
+
+  .descriptions-panel p,
+  .descriptions-panel li {
+    font-size: 14px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .accessibility-toggle {
+    transition: none;
+  }
+
+  .accessibility-toggle:hover {
+    transform: none;
+  }
+
+  .descriptions-panel {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .accessibility-toggle,
+  .descriptions-panel {
+    border-width: 3px;
+  }
+
+  .descriptions-panel kbd {
+    border-width: 2px;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+.accessibility-toggle:focus-visible,
+.close-descriptions:focus-visible,
+.accessibility-options input[type="checkbox"]:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 3px;
+}

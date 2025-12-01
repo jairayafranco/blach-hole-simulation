@@ -17,7 +17,7 @@ import { GravitationalLensingR3F } from './components/GravitationalLensingR3F';
  * - 1.1, 1.2, 1.5: Core rendering
  * - 9.1-9.5: Configuration system
  */
-export function BlackHoleSimulationR3F({ config: initialConfig = {} }) {
+export function BlackHoleSimulationR3F({ config: initialConfig = {}, isPaused = false }) {
   const { camera, gl } = useThree();
   
   // Configuration state with defaults
