@@ -95,6 +95,26 @@ describe('RendererManager', () => {
     expect(() => rendererManager.render(scene, camera)).toThrow('RendererManager not initialized');
   });
 
+  it('should throw error when enabling bloom before initialization', () => {
+    expect(() => rendererManager.enableBloom()).toThrow('Composer not initialized');
+  });
+
+  it('should throw error when setting exposure before initialization', () => {
+    expect(() => rendererManager.setExposure(1.5)).toThrow('RendererManager not initialized');
+  });
+
+  it('should throw error when setting tone mapping before initialization', () => {
+    expect(() => rendererManager.setToneMapping(THREE.ACESFilmicToneMapping)).toThrow('RendererManager not initialized');
+  });
+
+  it('should return null bloom strength when bloom not enabled', () => {
+    expect(rendererManager.getBloomStrength()).toBeNull();
+  });
+
+  it('should return default exposure when not initialized', () => {
+    expect(rendererManager.getExposure()).toBe(1.0);
+  });
+
   // Note: Actual WebGL rendering tests require a real browser environment
   // These tests verify the API contract and error handling
   // Integration tests in a real browser will verify rendering functionality

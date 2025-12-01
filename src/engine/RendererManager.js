@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 /**
  * RendererManager handles WebGL renderer configuration and post-processing.
@@ -11,6 +12,7 @@ export class RendererManager {
     this.renderer = null;
     this.composer = null;
     this.renderPass = null;
+    this.bloomPass = null;
     this.canvas = null;
   }
 
@@ -117,6 +119,80 @@ export class RendererManager {
   }
 
   /**
+   * Enable bloom post-processing effect
+   * @param {number} strength - Bloom strength (0.0-3.0, default 1.5)
+   * @param {number} radius - Bloom radius (default 0.4)
+   * @param {number} threshold - Bloom threshold (default 0.85)
+   */
+  enableBloom(strength = 1.5, radius = 0.4, threshold = 0.85) {
+    if (!this.composer) {
+      throw new Error('Composer not initialized. Call initialize() first.');
+    }
+
+    // Remove existing bloom pass if present
+    if (this.bloomPass) {
+      this.composer.removePass(this.bloomPass);
+    }
+
+    // Create bloom pass with specified parameters
+    const resolution = new THREE.Vector2(
+      this.canvas.clientWidth,
+      this.canvas.clientHeight
+    );
+    
+    this.bloomPass = new UnrealBloomPass(resolution, strength, radius, threshold);
+    this.composer.addPass(this.bloomPass);
+  }
+
+  /**
+   * Update bloom strength
+   * @param {number} strength - New bloom strength (0.0-3.0)
+   */
+  setBloomStrength(strength) {
+    if (this.bloomPass) {
+      this.bloomPass.strength = strength;
+    }
+  }
+
+  /**
+   * Get the current bloom strength
+   * @returns {number|null} Current bloom strength or null if bloom not enabled
+   */
+  getBloomStrength() {
+    return this.bloomPass ? this.bloomPass.strength : null;
+  }
+
+  /**
+   * Set tone mapping exposure level
+   * @param {number} exposure - Exposure level (typically 0.5-2.0, default 1.0)
+   */
+  setExposure(exposure) {
+    if (!this.renderer) {
+      throw new Error('RendererManager not initialized. Call initialize() first.');
+    }
+    this.renderer.toneMappingExposure = exposure;
+  }
+
+  /**
+   * Get the current tone mapping exposure
+   * @returns {number} Current exposure level
+   */
+  getExposure() {
+    return this.renderer ? this.renderer.toneMappingExposure : 1.0;
+  }
+
+  /**
+   * Set tone mapping type
+   * @param {number} toneMapping - Three.js tone mapping constant (e.g., THREE.ACESFilmicToneMapping)
+   */
+  setToneMapping(toneMapping) {
+    if (!this.renderer) {
+      throw new Error('RendererManager not initialized. Call initialize() first.');
+    }
+    this.renderer.toneMapping = toneMapping;
+  }
+
+  /**
    * Get the renderer instance
    * @returns {THREE.WebGLRenderer} The renderer
    */
@@ -147,6 +223,7 @@ export class RendererManager {
     }
 
     this.renderPass = null;
+    this.bloomPass = null;
     this.canvas = null;
   }
 }
