@@ -14,6 +14,15 @@ export class RendererManager {
     this.renderPass = null;
     this.bloomPass = null;
     this.canvas = null;
+    
+    // WebGL context loss handling
+    this.contextLostHandler = null;
+    this.contextRestoredHandler = null;
+    this.contextLostRetries = 0;
+    this.maxContextLostRetries = 3;
+    this.isContextLost = false;
+    this.onContextLostCallback = null;
+    this.onContextRestoredCallback = null;
   }
 
   /**
@@ -49,8 +58,110 @@ export class RendererManager {
     // Initialize post-processing composer foundation
     this.composer = new EffectComposer(this.renderer);
     
+    // Set up WebGL context loss handling
+    this.setupContextLossHandling();
+    
     // Note: RenderPass will be added when we have a scene and camera
     // This is done via enablePostProcessing or directly by the application
+  }
+
+  /**
+   * Set up WebGL context loss and restoration event handlers
+   * Implements Requirement 1.5: Handle WebGL context loss gracefully
+   */
+  setupContextLossHandling() {
+    if (!this.canvas) {
+      return;
+    }
+
+    // Handler for context lost event
+    this.contextLostHandler = (event) => {
+      event.preventDefault();
+      this.isContextLost = true;
+      console.warn('WebGL context lost. Attempting recovery...');
+      
+      // Notify callback if registered
+      if (this.onContextLostCallback) {
+        this.onContextLostCallback();
+      }
+    };
+
+    // Handler for context restored event
+    this.contextRestoredHandler = () => {
+      this.contextLostRetries++;
+      console.log(`WebGL context restored (attempt ${this.contextLostRetries}/${this.maxContextLostRetries})`);
+      
+      if (this.contextLostRetries <= this.maxContextLostRetries) {
+        this.isContextLost = false;
+        
+        // Notify callback if registered
+        if (this.onContextRestoredCallback) {
+          this.onContextRestoredCallback();
+        }
+      } else {
+        console.error('WebGL context restoration failed after maximum retry attempts');
+        this.displayContextLossError();
+      }
+    };
+
+    // Add event listeners
+    this.canvas.addEventListener('webglcontextlost', this.contextLostHandler, false);
+    this.canvas.addEventListener('webglcontextrestored', this.contextRestoredHandler, false);
+  }
+
+  /**
+   * Display user-friendly error message when context restoration fails
+   */
+  displayContextLossError() {
+    const errorMessage = document.createElement('div');
+    errorMessage.style.position = 'absolute';
+    errorMessage.style.top = '50%';
+    errorMessage.style.left = '50%';
+    errorMessage.style.transform = 'translate(-50%, -50%)';
+    errorMessage.style.padding = '20px';
+    errorMessage.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    errorMessage.style.color = 'white';
+    errorMessage.style.borderRadius = '8px';
+    errorMessage.style.fontFamily = 'Arial, sans-serif';
+    errorMessage.style.textAlign = 'center';
+    errorMessage.style.zIndex = '10000';
+    errorMessage.innerHTML = `
+      <h3 style="margin: 0 0 10px 0;">WebGL Context Lost</h3>
+      <p style="margin: 0;">The 3D rendering context has been lost and could not be recovered.</p>
+      <p style="margin: 10px 0 0 0;">Please refresh the page to restart the simulation.</p>
+    `;
+    
+    // Insert error message relative to canvas
+    if (this.canvas.parentElement) {
+      this.canvas.parentElement.style.position = 'relative';
+      this.canvas.parentElement.appendChild(errorMessage);
+    } else {
+      document.body.appendChild(errorMessage);
+    }
+  }
+
+  /**
+   * Register callback for context lost event
+   * @param {Function} callback - Function to call when context is lost
+   */
+  onContextLost(callback) {
+    this.onContextLostCallback = callback;
+  }
+
+  /**
+   * Register callback for context restored event
+   * @param {Function} callback - Function to call when context is restored
+   */
+  onContextRestored(callback) {
+    this.onContextRestoredCallback = callback;
+  }
+
+  /**
+   * Check if WebGL context is currently lost
+   * @returns {boolean} True if context is lost
+   */
+  isContextCurrentlyLost() {
+    return this.isContextLost;
   }
 
   /**
@@ -212,6 +323,16 @@ export class RendererManager {
    * Dispose of all resources
    */
   dispose() {
+    // Remove context loss event listeners
+    if (this.canvas) {
+      if (this.contextLostHandler) {
+        this.canvas.removeEventListener('webglcontextlost', this.contextLostHandler);
+      }
+      if (this.contextRestoredHandler) {
+        this.canvas.removeEventListener('webglcontextrestored', this.contextRestoredHandler);
+      }
+    }
+
     if (this.composer) {
       this.composer.dispose();
       this.composer = null;
@@ -225,5 +346,9 @@ export class RendererManager {
     this.renderPass = null;
     this.bloomPass = null;
     this.canvas = null;
+    this.contextLostHandler = null;
+    this.contextRestoredHandler = null;
+    this.onContextLostCallback = null;
+    this.onContextRestoredCallback = null;
   }
 }

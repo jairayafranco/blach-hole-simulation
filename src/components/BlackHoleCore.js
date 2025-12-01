@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createShaderMaterial } from '../utils/ShaderUtils.js';
 
 /**
  * BlackHoleCore renders the event horizon sphere with light absorption effects.
@@ -90,12 +91,13 @@ export class BlackHoleCore {
       }
     `;
 
-    return new THREE.ShaderMaterial({
+    // Use shader utility with error handling and fallback
+    return createShaderMaterial({
       uniforms: uniforms,
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
       side: THREE.FrontSide
-    });
+    }, 'BlackHoleCore');
   }
 
   /**

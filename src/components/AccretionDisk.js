@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createShaderMaterial } from '../utils/ShaderUtils.js';
 
 /**
  * AccretionDisk renders the rotating disk with differential rotation and heat gradients.
@@ -139,7 +140,8 @@ export class AccretionDisk {
       }
     `;
 
-    return new THREE.ShaderMaterial({
+    // Use shader utility with error handling and fallback
+    return createShaderMaterial({
       uniforms: uniforms,
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
@@ -147,7 +149,7 @@ export class AccretionDisk {
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false
-    });
+    }, 'AccretionDisk');
   }
 
   /**

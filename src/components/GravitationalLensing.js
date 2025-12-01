@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createShaderMaterial } from '../utils/ShaderUtils.js';
 
 /**
  * GravitationalLensing applies shader-based distortion effects to simulate light bending.
@@ -208,13 +209,14 @@ export class GravitationalLensing {
       }
     `;
 
-    return new THREE.ShaderMaterial({
+    // Use shader utility with error handling and fallback
+    return createShaderMaterial({
       uniforms: uniforms,
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
       depthTest: false,
       depthWrite: false
-    });
+    }, 'GravitationalLensing');
   }
 
   /**

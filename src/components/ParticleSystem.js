@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createShaderMaterial } from '../utils/ShaderUtils.js';
 
 /**
  * ParticleSystem manages particle generation, physics simulation, and rendering.
@@ -147,7 +148,8 @@ export class ParticleSystem {
       }
     `;
 
-    return new THREE.ShaderMaterial({
+    // Use shader utility with error handling and fallback
+    return createShaderMaterial({
       uniforms: uniforms,
       vertexShader: vertexShader,
       fragmentShader: fragmentShader,
@@ -155,7 +157,7 @@ export class ParticleSystem {
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       vertexColors: true
-    });
+    }, 'ParticleSystem');
   }
 
   /**

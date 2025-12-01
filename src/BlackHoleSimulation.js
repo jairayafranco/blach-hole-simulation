@@ -9,6 +9,7 @@ import { ParticleSystem } from './components/ParticleSystem.js';
 import { GravitationalLensing } from './components/GravitationalLensing.js';
 import { Starfield } from './components/Starfield.js';
 import { LightingSystem } from './components/LightingSystem.js';
+import { PerformanceMonitor } from './utils/PerformanceMonitor.js';
 
 /**
  * BlackHoleSimulation is the main class that integrates all components
@@ -37,6 +38,10 @@ export class BlackHoleSimulation {
     this.gravitationalLensing = null;
     this.starfield = null;
     this.lightingSystem = null;
+
+    // Performance monitoring
+    this.performanceMonitor = null;
+    this.performanceNotificationCallback = null;
 
     // Animation state
     this.animationFrameId = null;
@@ -142,10 +147,16 @@ export class BlackHoleSimulation {
         0.85
       );
 
-      // 7. Wire up configuration system
+      // 7. Set up WebGL context loss handling
+      this.setupContextLossHandling();
+
+      // 8. Set up performance monitoring
+      this.setupPerformanceMonitoring();
+
+      // 9. Wire up configuration system
       this.wireConfigurationSystem();
 
-      // 8. Set up resize handling
+      // 10. Set up resize handling
       window.addEventListener('resize', this.handleResize);
 
       // Apply initial performance optimizations based on viewport
@@ -156,6 +167,119 @@ export class BlackHoleSimulation {
       console.error('Failed to initialize Black Hole Simulation:', error);
       throw error;
     }
+  }
+
+  /**
+   * Set up WebGL context loss handling
+   * Implements Requirement 1.5: Handle WebGL context loss gracefully
+   */
+  setupContextLossHandling() {
+    if (!this.rendererManager) {
+      return;
+    }
+
+    // Register context lost callback
+    this.rendererManager.onContextLost(() => {
+      console.warn('Black Hole Simulation: WebGL context lost, pausing animation');
+      this.stop();
+      
+      // Stop performance monitoring during context loss
+      if (this.performanceMonitor) {
+        this.performanceMonitor.stop();
+      }
+    });
+
+    // Register context restored callback
+    this.rendererManager.onContextRestored(() => {
+      console.log('Black Hole Simulation: WebGL context restored, attempting to restart');
+      
+      try {
+        // Restart animation
+        this.start();
+        
+        // Resume performance monitoring
+        if (this.performanceMonitor) {
+          this.performanceMonitor.start();
+        }
+        
+        console.log('Black Hole Simulation: Successfully recovered from context loss');
+      } catch (error) {
+        console.error('Black Hole Simulation: Failed to recover from context loss', error);
+      }
+    });
+  }
+
+  /**
+   * Set up performance monitoring and auto-adjustment
+   * Implements Requirements 1.4, 3.4: Monitor performance and auto-adjust particle count
+   */
+  setupPerformanceMonitoring() {
+    this.performanceMonitor = new PerformanceMonitor(60);
+
+    // Register degradation callback
+    this.performanceMonitor.onDegradation((stats) => {
+      console.warn('Performance degradation detected:', stats);
+      
+      const recommendation = stats.recommendation;
+      
+      if (recommendation.action !== 'none' && this.particleSystem && this.configManager) {
+        const currentConfig = this.configManager.getConfig();
+        const currentParticleCount = currentConfig.particleCount;
+        const newParticleCount = Math.max(
+          100, // Minimum particle count
+          Math.floor(currentParticleCount * (1 - recommendation.reduction))
+        );
+        
+        console.log(`Auto-reducing particle count from ${currentParticleCount} to ${newParticleCount}`);
+        
+        // Update configuration
+        this.configManager.updateConfig({
+          particleCount: newParticleCount
+        });
+        
+        // Notify user if callback is registered
+        if (this.performanceNotificationCallback) {
+          this.performanceNotificationCallback({
+            type: 'degradation',
+            message: `Performance mode adjusted: Reduced particle count to ${newParticleCount}`,
+            stats: stats
+          });
+        }
+      }
+    });
+
+    // Register recovery callback
+    this.performanceMonitor.onRecovery((stats) => {
+      console.log('Performance recovered:', stats);
+      
+      // Optionally notify user of recovery
+      if (this.performanceNotificationCallback) {
+        this.performanceNotificationCallback({
+          type: 'recovery',
+          message: 'Performance has recovered',
+          stats: stats
+        });
+      }
+    });
+  }
+
+  /**
+   * Register a callback for performance notifications
+   * @param {Function} callback - Function to call when performance changes
+   */
+  onPerformanceNotification(callback) {
+    this.performanceNotificationCallback = callback;
+  }
+
+  /**
+   * Get current performance statistics
+   * @returns {Object} Performance statistics
+   */
+  getPerformanceStats() {
+    if (!this.performanceMonitor) {
+      return null;
+    }
+    return this.performanceMonitor.getStats();
   }
 
   /**
@@ -236,6 +360,12 @@ export class BlackHoleSimulation {
     }
 
     this.isRunning = true;
+    
+    // Start performance monitoring
+    if (this.performanceMonitor) {
+      this.performanceMonitor.start();
+    }
+    
     this.animate();
   }
 
@@ -247,6 +377,11 @@ export class BlackHoleSimulation {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
+    }
+    
+    // Stop performance monitoring
+    if (this.performanceMonitor) {
+      this.performanceMonitor.stop();
     }
   }
 
@@ -270,6 +405,11 @@ export class BlackHoleSimulation {
 
     // Render the scene
     this.render();
+
+    // Record frame for performance monitoring
+    if (this.performanceMonitor) {
+      this.performanceMonitor.recordFrame();
+    }
   }
 
   /**
@@ -443,6 +583,13 @@ export class BlackHoleSimulation {
       this.configManager.reset();
       this.configManager = null;
     }
+
+    if (this.performanceMonitor) {
+      this.performanceMonitor.stop();
+      this.performanceMonitor = null;
+    }
+
+    this.performanceNotificationCallback = null;
 
     console.log('Black Hole Simulation disposed');
   }
